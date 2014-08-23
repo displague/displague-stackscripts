@@ -35,7 +35,7 @@ echo "  ======"
 echo ""
 echo "Creating user..."
 user_add_sudo "$GH_USERNAME" "$(randomString)"
-passwd -d displague
+passwd -d "$GH_USERNAME"
 sed -Ei 's/#?\s*(auth\s+sufficient\s+pam_wheel.so\s+trust)/\1/' /etc/pam.d/su
 sed -Ei "s/^root:.*/\0$GH_USERNAME/" /etc/group
 echo "$GH_USERNAME ALL=NOPASSWD: ALL" > "/etc/sudoers.d/$GH_USERNAME"
