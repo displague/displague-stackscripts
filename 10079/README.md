@@ -10,6 +10,10 @@ Your GitHub username is all you need to sudo or su.  No more secrets!
 
 ( But wait! Password-less root tty logins are currently available. This is a limited time offer, only valid in LISH ) 
 
+## Try it on a Linode
+https://www.linode.com/stackscripts/view/10079
+
+## Yada, Yada
 Copyright Marques Johansson, 2014.
 Released under the MIT License
 
