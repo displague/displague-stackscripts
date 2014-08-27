@@ -36,20 +36,29 @@ echo ""
 echo "Creating user..."
 user_add_sudo "$GH_USERNAME" "$(randomString)"
 passwd -d "$GH_USERNAME"
+
+echo "Giving user passwordless sudo/su..."
 sed -Ei 's/#?\s*(auth\s+sufficient\s+pam_wheel.so\s+trust)/\1/' /etc/pam.d/su
 sed -Ei "s/^root:.*/\0$GH_USERNAME/" /etc/group
 echo "$GH_USERNAME ALL=NOPASSWD: ALL" > "/etc/sudoers.d/$GH_USERNAME"
+
 echo "Adding GitHub SSH Keys..."
 user_github_keys "$GH_USERNAME"
+
 echo "Disabling Root SSH..."
 ssh_disable_root
+
 echo "Disabling Root Password..."
 passwd -d root
+
 echo "Disabling Root Shell..."
 chsh -s /usr/sbin/nologin root
+
 echo "Disabling NullOK Pam/Unix Auth for SecureTTYs..."
 grep -l nullok_secure /etc/pam.d/* | while read pamf; do sed -i s/nullok_secure// $pamf; done
+
 echo -e "\n\nPasswords have been disabled.\nUse SSH ssh://$GH_USERNAME@$(hostname -A)" >> /etc/issue
+
 echo "Done."
 echo ""
 echo "  ======"
