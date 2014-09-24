@@ -41,6 +41,7 @@ echo "Giving user passwordless sudo/su..."
 sed -Ei 's/#?\s*(auth\s+sufficient\s+pam_wheel.so\s+trust)/\1/' /etc/pam.d/su
 sed -Ei "s/^root:.*/\0$GH_USERNAME/" /etc/group
 echo "$GH_USERNAME ALL=NOPASSWD: ALL" > "/etc/sudoers.d/$GH_USERNAME"
+chmod 0440 > "/etc/sudoers.d/$GH_USERNAME"
 
 echo "Adding GitHub SSH Keys..."
 user_github_keys "$GH_USERNAME"
