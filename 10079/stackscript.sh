@@ -9,10 +9,20 @@ function btr_user_add_sudo {
     echo "No new username and/or password entered"
     return 1;
   fi
-  apt-get install -y sudo || yum install -y sudo
-  adduser "$USERNAME" --disable-password --gecos "" || adduser "$USERNAME"
-  echo "$USERNAME:$USERPASS" | chpasswd
-  usermod -aG sudo "$USERNAME"
+
+  [ -f /etc/debian_version ] && (
+    adduser "$USERNAME" --disable-password --gecos ""
+    echo "$USERNAME:$USERPASS" | chpasswd
+    apt-get install -y sudo
+    usermod -aG sudo "$USERNAME"
+  )
+
+  [ -f /etc/redhat-release ] && (
+    adduser "$USERNAME" -p "$USERPASS"
+    yum install -y sudo
+    usermod -aG wheel "$USERNAME"
+  )
+
 }
 
 # Fetch GitHub SSH Keys
@@ -52,11 +62,15 @@ passwd -d "$GH_USERNAME"
 
 echo "Giving user passwordless sudo/su..."
 sed -i 's/#\?\s*\(auth\s\+sufficient\s\+pam_wheel.so\s\+trust\)/\1/' /etc/pam.d/su
-sed -i "s/^root:.*/\0,$GH_USERNAME/" /etc/group
-sed -i "s/^wheel:.*/\0,$GH_USERNAME/" /etc/group
+#sed -i "s/^root:.*/\0,$GH_USERNAME/" /etc/group
+#sed -i "s/^wheel:.*/\0,$GH_USERNAME/" /etc/group
 
-SUDOERS=/etc/sudoers
-[ -d /etc/sudoers.d ] && SUDOERS="/etc/sudoers.d/$GH_USERNAME"
+if [ -d /etc/sudoers.d ]; then
+  SUDOERS="/etc/sudoers.d/$GH_USERNAME"
+else
+  SUDOERS=/etc/sudoers
+fi
+
 echo "$GH_USERNAME ALL=NOPASSWD: ALL" >> "$SUDOERS"
 chmod 0440 "$SUDOERS"
 
