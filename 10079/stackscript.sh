@@ -10,19 +10,16 @@ function btr_user_add_sudo {
     return 1;
   fi
 
-  [ -f /etc/debian_version ] && (
-    adduser "$USERNAME" --disable-password --gecos ""
+  if [ -f /etc/debian_version ]; then
+    adduser "$USERNAME" --disabled-password --gecos ""
     echo "$USERNAME:$USERPASS" | chpasswd
     apt-get install -y sudo
     usermod -aG sudo "$USERNAME"
-  )
-
-  [ -f /etc/redhat-release ] && (
+  elif [ -f /etc/redhat-release ]; then
     adduser "$USERNAME" -p "$USERPASS"
     yum install -y sudo
     usermod -aG wheel "$USERNAME"
-  )
-
+  fi
 }
 
 # Fetch GitHub SSH Keys
