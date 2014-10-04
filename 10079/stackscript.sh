@@ -36,15 +36,11 @@ function user_github_keys {
         return 1;
     fi
 
-    if [ "$USERNAME" == "root" ]; then
-        mkdir /root/.ssh
-        wget -q -O- "${GITHUBKEYS}" >> /root/.ssh/authorized_keys
-        return 1;
-    else
-        mkdir -p /home/$USERNAME/.ssh
-        wget -q -O- "${GITHUBKEYS}" >> /home/$USERNAME/.ssh/authorized_keys
-        chown -R "$USERNAME":"$USERNAME" /home/$USERNAME/.ssh
-    fi
+    HDIR="$(grep "$USERNAME" /etc/passwd | cut -f6 -d:)"
+    mkdir -p $HDIR/.ssh
+    wget -q -O- "${GITHUBKEYS}" >> "$HDIR/.ssh/authorized_keys"
+    chown -R "$USERNAME":"$USERNAME" "$HDIR/.ssh"
+    chmod 600 "$HDIR/.ssh/authorized_keys"
 }
 
 echo "#################"
