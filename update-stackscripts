@@ -5,91 +5,91 @@ require 'linode'
 require 'optparse'
 
 class Array
-    def rest
-        self[1..-1]
-    end
+  def rest
+    self[1..-1]
+  end
 end
 
 def l
-    if not ENV.has_key?('LINODE_API_KEY')
-        puts "You must define the environment variable LINODE_API_KEY"
-        exit 1
-    end
-    $l ||= Linode.new(:api_key => ENV['LINODE_API_KEY'])
+  if not ENV.has_key?('LINODE_API_KEY')
+    puts "You must define the environment variable LINODE_API_KEY"
+    exit 1
+  end
+  $l ||= Linode.new(:api_key => ENV['LINODE_API_KEY'])
 end
 
 class Env
-    # Populate with usage string in subclass
-    @usage = nil
+  # Populate with usage string in subclass
+  @usage = nil
 
-    def self.go(params)
-    end
+  def self.go(params)
+  end
 
-    def self.usage
-        puts "Usage: #{@usage}"
-    end
+  def self.usage
+    puts "Usage: #{@usage}"
+  end
 end
 
 class SummaryEnv < Env
-    def self.go(params)
-        puts "linode"
-    end
+  def self.go(params)
+    puts "linode"
+  end
 end
 
 class DirectoryParser
   def self.parse()
-    if File.exists("README.md")?
+    if File.exists?("README.md")
       txt = File.open("README.md")
-      descriptin = txt.read
+      description = txt.read
     else
-      descriptin = ''
+      description = ''
     end
-    (
-      :description => descriptin
-    )
+    {
+      :description => description
+    }
   end
 end
 
 class SSUpdate < Env
-    def self.go(params)
-        @usage = 'update <id>'
-        
-        unless params.size == 1
-            usage
-            exit 1
-        end
-        
-        ssid = params[0]
+  def self.go(params)
+    @usage = 'update <id>'
 
-        l.stackscript.update(
-            :stackscriptid => ssid,
-            :label => label,
-            :description => description,
-            :distributionidlist => distributionids,
-            :ispublic => ispublic,
-            :rev_note => rev_note,
-            :script => script
-        )
+    unless params.size == 1
+      usage
+      exit 1
     end
+
+    ssid = params[0]
+
+    l.stackscript.update(
+      :stackscriptid => ssid,
+      :label => label,
+      :description => description,
+      :distributionidlist => distributionids,
+      :ispublic => ispublic,
+      :rev_note => rev_note,
+      :script => script
+    )
+  end
 end
 
 class LinodeEnv < Env
-    def self.go(params)
-        puts "whee"
-    end
+  def self.go(params)
+    puts "whee"
+  end
 end
 
 ENVS = {
-    :summary => SummaryEnv,
-    :dns => DNSEnv,
-    :l => LinodeEnv
+  :summary => SummaryEnv,
+  :dns => DNSEnv,
+  :l => LinodeEnv
 }
 
 env = ARGV[0] && ARGV[0].downcase.to_sym || :summary
 
 unless ENVS.include? env
-    puts "Not valid env"
-    exit 1
+  puts "Not valid env"
+  exit 1
 end
 
 ENVS[env]::go ARGV.rest
