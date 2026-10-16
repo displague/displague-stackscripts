@@ -1,95 +1,102 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env python3
+"""Update or view Linode StackScripts from local repository directories."""
 
-require 'rubygems'
-require 'linode'
-require 'optparse'
+import argparse
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
 
-class Array
-  def rest
-    self[1..-1]
-  end
-end
 
-def l
-  if not ENV.has_key?('LINODE_API_KEY')
-    puts "You must define the environment variable LINODE_API_KEY"
-    exit 1
-  end
-  $l ||= Linode.new(:api_key => ENV['LINODE_API_KEY'])
-end
+ROOT_DIR = Path(__file__).resolve().parent
 
-class Env
-  # Populate with usage string in subclass
-  @usage = nil
 
-  def self.go(params)
-  end
+def run_linode_cli(args):
+    cmd = ["linode-cli", "--json"] + args
+    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if res.returncode != 0:
+        sys.stderr.write(res.stderr)
+        sys.exit(res.returncode)
+    return json.loads(res.stdout)
 
-  def self.usage
-    puts "Usage: #{@usage}"
-  end
-end
 
-class SummaryEnv < Env
-  def self.go(params)
-    puts "linode"
-  end
-end
+def parse_stackscript_dir(ss_dir: Path):
+    script_path = ss_dir / "stackscript.sh"
+    if not script_path.exists():
+        raise FileNotFoundError(f"Missing {script_path}")
 
-class DirectoryParser
-  def self.parse()
-    if File.exists?("README.md")
-      txt = File.open("README.md")
-      description = txt.read
-    else
-      description = ''
-    end
-    {
-      :description => description
+    script = script_path.read_text(encoding="utf-8")
+    readme_path = ss_dir / "README.md"
+    description = readme_path.read_text(encoding="utf-8") if readme_path.exists() else ""
+
+    images_path = ss_dir / "images.txt"
+    images = []
+    if images_path.exists():
+        images = [
+            line.strip()
+            for line in images_path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+
+    return {
+        "script": script,
+        "description": description,
+        "images": images,
     }
-  end
-end
 
-class SSUpdate < Env
-  def self.go(params)
-    @usage = 'update <id>'
 
-    unless params.size == 1
-      usage
-      exit 1
-    end
-
-    ssid = params[0]
-
-    l.stackscript.update(
-      :stackscriptid => ssid,
-      :label => label,
-      :description => description,
-      :distributionidlist => distributionids,
-      :ispublic => ispublic,
-      :rev_note => rev_note,
-      :script => script
+def cmd_summary(_args):
+    dirs = sorted(
+        p for p in ROOT_DIR.iterdir()
+        if p.is_dir() and p.name.isdigit() and (p / "stackscript.sh").exists()
     )
-  end
-end
+    for d in dirs:
+        info = parse_stackscript_dir(d)
+        print(f"StackScript {d.name}: {len(info['images'])} configured images")
 
-class LinodeEnv < Env
-  def self.go(params)
-    puts "whee"
-  end
-end
 
-ENVS = {
-  :summary => SummaryEnv,
-  :dns => DNSEnv,
-  :l => LinodeEnv
-}
+def cmd_update(args):
+    targets = args.ids if args.ids else [
+        p.name for p in sorted(ROOT_DIR.iterdir())
+        if p.is_dir() and p.name.isdigit() and (p / "stackscript.sh").exists()
+    ]
+    for ssid in targets:
+        ss_dir = ROOT_DIR / str(ssid)
+        info = parse_stackscript_dir(ss_dir)
+        cli_args = [
+            "stackscripts", "update", str(ssid),
+            "--script", info["script"],
+        ]
+        if args.rev_note:
+            cli_args += ["--rev_note", args.rev_note]
+        for img in info["images"]:
+            cli_args += ["--images", img]
 
-env = ARGV[0] && ARGV[0].downcase.to_sym || :summary
+        updated = run_linode_cli(cli_args)
+        entry = updated[0] if updated else {}
+        print(
+            f"Updated StackScript {ssid} ({entry.get('label', '')}): "
+            f"{len(entry.get('images', []))} images, updated={entry.get('updated', '')}"
+        )
 
-unless ENVS.include? env
-  puts "Not valid env"
-  exit 1
-end
 
-ENVS[env]::go ARGV.rest
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command")
+
+    sub.add_parser("summary", help="List local StackScript directories")
+
+    up_parser = sub.add_parser("update", help="Update StackScript(s) via linode-cli")
+    up_parser.add_argument("ids", nargs="*", help="StackScript ID(s) to update (default: all)")
+    up_parser.add_argument("-m", "--rev-note", default="Updated via update-stackscripts", help="Revision note")
+
+    args = parser.parse_args()
+    if args.command == "update":
+        cmd_update(args)
+    else:
+        cmd_summary(args)
+
+
+if __name__ == "__main__":
+    main()
