@@ -2,8 +2,8 @@
 
 ## Rootless and GitHub User has sudo
 
-* https://www.linode.com/stackscripts/view/10079
+* https://cloud.linode.com/stackscripts/10079
 
 ## CloudInit
 
-* https://www.linode.com/stackscripts/view/392559
+* https://cloud.linode.com/stackscripts/392559
