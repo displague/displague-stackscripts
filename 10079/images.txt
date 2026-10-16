@@ -1,0 +1,9 @@
+linode/debian11
+linode/debian12
+linode/debian13
+linode/ubuntu20.04
+linode/ubuntu22.04
+linode/ubuntu24.04
+linode/ubuntu25.10
+linode/ubuntu26.04
+linode/slackware15.0

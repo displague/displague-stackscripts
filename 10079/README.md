@@ -9,11 +9,10 @@ With one simple text entry of your GitHub username, all of your GitHub configure
 Your GitHub username is all you need to sudo or su.  No more secrets!
 
 ## Try it on a Linode
-https://www.linode.com/stackscripts/view/10079
+https://cloud.linode.com/stackscripts/10079
 
 ## Yada, Yada
 Copyright Marques Johansson, 2014.
 Released under the MIT License
 
 Send comments to @displague
-
