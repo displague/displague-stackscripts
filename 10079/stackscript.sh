@@ -39,8 +39,30 @@ function btr_user_add_sudo {
       fi
     fi
     usermod -aG wheel "$USERNAME"
-  else
+  elif [ -f /etc/alpine-release ]; then
+    adduser -D -s "$USER_SHELL" "$USERNAME" || useradd -m -s "$USER_SHELL" "$USERNAME"
+    echo "$USERNAME:$USERPASS" | chpasswd
+    if ! command -v sudo >/dev/null 2>&1; then
+      apk update && apk add sudo
+    fi
+    addgroup "$USERNAME" wheel 2>/dev/null || usermod -aG wheel "$USERNAME" 2>/dev/null || true
+  elif [ -f /etc/arch-release ]; then
     useradd -m -s "$USER_SHELL" "$USERNAME"
+    echo "$USERNAME:$USERPASS" | chpasswd
+    if ! command -v sudo >/dev/null 2>&1; then
+      pacman -Sy --noconfirm sudo
+    fi
+    usermod -aG wheel "$USERNAME" 2>/dev/null || true
+  elif [ -f /etc/SuSE-release ] || grep -qi "suse" /etc/os-release 2>/dev/null; then
+    useradd -m -s "$USER_SHELL" "$USERNAME"
+    echo "$USERNAME:$USERPASS" | chpasswd
+    if ! command -v sudo >/dev/null 2>&1; then
+      zypper --non-interactive install sudo
+    fi
+    usermod -aG wheel "$USERNAME" 2>/dev/null || true
+  else
+    # Slackware, Gentoo, or other generic Linux
+    useradd -m -s "$USER_SHELL" "$USERNAME" || adduser -D -s "$USER_SHELL" "$USERNAME"
     echo "$USERNAME:$USERPASS" | chpasswd
     usermod -aG wheel "$USERNAME" 2>/dev/null || gpasswd -a "$USERNAME" wheel 2>/dev/null || true
   fi
@@ -72,6 +94,12 @@ function user_github_keys {
             DEBIAN_FRONTEND=noninteractive apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y curl
         elif [ -f /etc/redhat-release ]; then
             (command -v dnf >/dev/null 2>&1 && dnf install -y curl) || yum install -y curl
+        elif [ -f /etc/alpine-release ]; then
+            apk add --no-cache curl
+        elif [ -f /etc/arch-release ]; then
+            pacman -Sy --noconfirm curl
+        elif grep -qi "suse" /etc/os-release 2>/dev/null; then
+            zypper --non-interactive install curl
         fi
         curl -fsSL "${GITHUBKEYS}" >> "$HDIR/.ssh/authorized_keys"
     fi
@@ -146,6 +174,9 @@ fi
 
 if command -v systemctl >/dev/null 2>&1; then
   systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null || systemctl restart sshd 2>/dev/null || systemctl restart ssh 2>/dev/null || true
+fi
+if command -v rc-service >/dev/null 2>&1; then
+  rc-service sshd reload 2>/dev/null || rc-service sshd restart 2>/dev/null || true
 fi
 if [ -x /etc/rc.d/rc.sshd ]; then
   /etc/rc.d/rc.sshd restart 2>/dev/null || true
