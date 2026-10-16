@@ -4,7 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STACKSCRIPT_ID="${STACKSCRIPT_ID:-$(basename "$SS_DIR")}"
-GH_USERNAME="${GH_USERNAME:-displague}"
+GH_USERNAME="${GH_USERNAME:-$(gh api user -q .login 2>/dev/null || git config github.user 2>/dev/null || echo "${USER:-}")}"
+if [ -z "$GH_USERNAME" ]; then
+  echo "Error: GH_USERNAME must be set (or logged in via 'gh auth login')" >&2
+  exit 1
+fi
 LINODE_TYPE="${LINODE_TYPE:-g6-nanode-1}"
 REGIONS=(${LINODE_REGIONS:-us-central us-east us-west us-ord us-southeast})
 
