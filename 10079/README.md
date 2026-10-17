@@ -26,9 +26,11 @@ $ linode-cli linodes create \
     --stackscript_data '{"gh_username":"YOUR_GITHUB_USERNAME"}'
 ```
 
-### Cloud-Init Equivalent
+### Cloud-Init & Passwordless Alternative
 
-On Linode images that natively support `cloud-init` (all modern images except `linode/slackware15.0`), the equivalent setup can be accomplished directly with the following `#cloud-config` passed via `--metadata.user_data`:
+Passwordless / SSH-key-only provisioning is now natively available on Linode images that support `cloud-init` (`--metadata.user_data`), or via the companion **[CloudInit StackScript (392559)](../392559/README.md)** ([https://cloud.linode.com/stackscripts/392559](https://cloud.linode.com/stackscripts/392559)) on images without native `cloud-init` support (such as `linode/slackware15.0`).
+
+See the [`#cloud-config` example in `392559/README.md`](../392559/README.md#deploy-with-linode-cli):
 
 ```yaml
 # /tmp/user-data
