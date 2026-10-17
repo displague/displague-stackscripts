@@ -26,9 +26,11 @@ $ linode-cli linodes create \
     --stackscript_data '{"gh_username":"YOUR_GITHUB_USERNAME"}'
 ```
 
-### Cloud-Init Equivalent
+### Cloud-Init & Passwordless Alternative
 
-On Linode images that natively support `cloud-init` (all modern images except `linode/slackware15.0`), the equivalent setup can be accomplished directly with the following `#cloud-config` passed via `--metadata.user_data`:
+Passwordless / SSH-key-only provisioning is now natively available on Linode images that support `cloud-init` (`--metadata.user_data`), or via the companion **[CloudInit StackScript (392559)](../392559/README.md)** ([https://cloud.linode.com/stackscripts/392559](https://cloud.linode.com/stackscripts/392559)) on images without native `cloud-init` support (such as `linode/slackware15.0`).
+
+See the [`#cloud-config` example in `392559/README.md`](../392559/README.md#deploy-with-linode-cli):
 
 ```yaml
 # /tmp/user-data
@@ -50,6 +52,12 @@ $ linode-cli linodes create \
     --root_pass "${ROOT_PASS}" \
     --metadata.user_data "$(base64 -w 0 /tmp/user-data)"
 ```
+
+#### References
+* [Use cloud-init to Automatically Configure and Secure Your Servers](https://www.akamai.com/cloud/guides/applications/configuration-management/cloud-init)
+* [Overview of the Metadata Service — Add User Data](https://techdocs.akamai.com/cloud-computing/docs/overview-of-the-metadata-service#add-user-data)
+* [Add User Data When Deploying a Compute Instance](https://techdocs.akamai.com/cloud-computing/docs/add-user-data-when-deploying-a-compute-instance)
+* [Creating Linodes without root passwords and mandating key authentication](https://www.akamai.com/cloud/community/questions/19024/creating-linodes-without-root-passwords-and-mandating-key-authentication#answer-111593)
 
 ## Yada, Yada
 Copyright Marques Johansson, 2014.

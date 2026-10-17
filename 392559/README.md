@@ -38,4 +38,9 @@ $ linode-cli linodes create \
 
 *(On images with native `cloud-init` capability, you can also pass `--metadata.user_data="$(base64 -w 0 /tmp/user-data)"` directly to `linode-cli linodes create`.)*
 
-See <https://cloudinit.readthedocs.io/en/latest/topics/examples.html> for examples of UserData files.
+## References
+* [Cloud-Init Documentation — Examples](https://cloudinit.readthedocs.io/en/latest/topics/examples.html)
+* [Use cloud-init to Automatically Configure and Secure Your Servers](https://www.akamai.com/cloud/guides/applications/configuration-management/cloud-init)
+* [Overview of the Metadata Service — Add User Data](https://techdocs.akamai.com/cloud-computing/docs/overview-of-the-metadata-service#add-user-data)
+* [Add User Data When Deploying a Compute Instance](https://techdocs.akamai.com/cloud-computing/docs/add-user-data-when-deploying-a-compute-instance)
+* [Get Images API (`capabilities`)](https://techdocs.akamai.com/linode-api/reference/get-images)
