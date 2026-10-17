@@ -53,6 +53,12 @@ $ linode-cli linodes create \
     --metadata.user_data "$(base64 -w 0 /tmp/user-data)"
 ```
 
+#### References
+* [Use cloud-init to Automatically Configure and Secure Your Servers](https://www.akamai.com/cloud/guides/applications/configuration-management/cloud-init)
+* [Overview of the Metadata Service — Add User Data](https://techdocs.akamai.com/cloud-computing/docs/overview-of-the-metadata-service#add-user-data)
+* [Add User Data When Deploying a Compute Instance](https://techdocs.akamai.com/cloud-computing/docs/add-user-data-when-deploying-a-compute-instance)
+* [Creating Linodes without root passwords and mandating key authentication](https://www.akamai.com/cloud/community/questions/19024/creating-linodes-without-root-passwords-and-mandating-key-authentication#answer-111593)
+
 ## Yada, Yada
 Copyright Marques Johansson, 2014.
 Released under the MIT License
