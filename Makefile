@@ -1,19 +1,18 @@
 SHELL := /bin/bash
-TEST_DIRS := $(wildcard */tests)
+TEST_SCRIPTS := $(wildcard */tests/test_stackscript.sh)
+TEST_IDS := $(patsubst %/tests/test_stackscript.sh,test-%,$(TEST_SCRIPTS))
 
-.PHONY: test update summary $(TEST_DIRS)
+.PHONY: test update summary $(TEST_SCRIPTS) $(TEST_IDS)
 
-test: $(TEST_DIRS)
+test: $(TEST_SCRIPTS)
 
-$(TEST_DIRS):
-	@echo "==> Running tests in $@"
-	@for t in $@/test*.sh; do \
-		if [ -x "$$t" ]; then \
-			"$$t"; \
-		else \
-			bash "$$t"; \
-		fi; \
-	done
+$(TEST_SCRIPTS):
+	@echo "==> Running $@"
+	./$@
+
+$(TEST_IDS): test-%: %/tests/test_stackscript.sh
+	@echo "==> Running $<"
+	./$<
 
 summary:
 	./update-stackscripts summary
