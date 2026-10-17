@@ -1,4 +1,4 @@
-# Linode StackScripts by Marques Johansson
+# Linode StackScripts
 
 Collection of Linode StackScripts, configuration metadata, and automated integration tests.
 
